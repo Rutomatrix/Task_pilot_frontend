@@ -42,7 +42,7 @@ const Navbar = () => {
         {/* Menu */}
         <nav className="space-y-4">
           <div className="text-gray-400 text-sm font-semibold uppercase mb-2">
-            Menu
+            General
           </div>
           <ul className="space-y-2">
             {menuItems.map((item) => (
@@ -63,7 +63,7 @@ const Navbar = () => {
           </ul>
 
           <div className="text-gray-400 text-sm font-semibold uppercase mt-8 mb-2">
-            General
+            Menu
           </div>
           <ul className="space-y-2">
             {generalItems.map((item) => (
