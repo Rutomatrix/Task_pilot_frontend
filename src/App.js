@@ -1,25 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+import Chat from "./pages/Chat";
+import Team from "./pages/Team";
+import Client from "./pages/Client";
+import Project from "./pages/Project";
+import Task from "./pages/Task";
+import Employees from "./pages/Employees";
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="flex min-h-screen bg-[#f8fafc]">
+        <Navbar />
+        <div className="flex-1 p-8">
+          <Routes>
+            {/* Default route redirects to /dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/client" element={<Client />} />
+            <Route path="/project" element={<Project />} />
+            <Route path="/task" element={<Task />} />
+            <Route path="/employees" element={<Employees />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;
