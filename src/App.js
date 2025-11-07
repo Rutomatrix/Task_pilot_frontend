@@ -12,13 +12,14 @@ import Employees from "./pages/Employees";
 const App = () => {
   return (
     <Router>
-      <div className="flex min-h-screen bg-[#f8fafc]">
+      <div className="flex h-screen">
+        {/* Fixed Navbar */}
         <Navbar />
-        <div className="flex-1 p-8">
+
+        {/* Main Content Area */}
+        <main className="flex-1 h-screen overflow-y-auto bg-[#f2f7fa] p-6 pl-64">
           <Routes>
-            {/* Default route redirects to /dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            
+            <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/team" element={<Team />} />
@@ -27,7 +28,7 @@ const App = () => {
             <Route path="/task" element={<Task />} />
             <Route path="/employees" element={<Employees />} />
           </Routes>
-        </div>
+        </main>
       </div>
     </Router>
   );
