@@ -19,10 +19,10 @@ const Navbar = () => {
   ];
 
   const generalItems = [
-    { name: "Team", icon: Users, path: "/team" },
-    { name: "Client", icon: Briefcase, path: "/client" },
-    { name: "Project", icon: ClipboardList, path: "/project" },
-    { name: "Task", icon: ClipboardList, path: "/task" },
+    { name: "Team", icon: Users, path: "/teams" },
+    { name: "Client", icon: Briefcase, path: "/clients" },
+    { name: "Project", icon: ClipboardList, path: "/projects" },
+    { name: "Task", icon: ClipboardList, path: "/tasks" },
     { name: "Employees", icon: UserCog, path: "/employees" },
   ];
 

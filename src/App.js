@@ -4,7 +4,10 @@ import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import Team from "./pages/Team";
-import Client from "./pages/Client";
+import Client from "./pages/clients/Client";
+import ClientAdd from "./pages/clients/ClientAdd";
+import ClientShow from "./pages/clients/ClientShow";
+import ClientEdit from "./pages/clients/ClientEdit";
 import Project from "./pages/Project";
 import Task from "./pages/Task";
 import Employees from "./pages/Employees";
@@ -22,10 +25,16 @@ const App = () => {
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/chat" element={<Chat />} />
-            <Route path="/team" element={<Team />} />
-            <Route path="/client" element={<Client />} />
-            <Route path="/project" element={<Project />} />
-            <Route path="/task" element={<Task />} />
+            <Route path="/teams" element={<Team />} />
+
+            {/* Clients routes */}
+            <Route path="/clients" element={<Client />} />
+            <Route path="/clients/add" element={<ClientAdd />} />
+            <Route path="/clients/:id" element={<ClientShow />} />
+            <Route path="/clients/:id/edit" element={<ClientEdit />} />
+
+            <Route path="/projects" element={<Project />} />
+            <Route path="/tasks" element={<Task />} />
             <Route path="/employees" element={<Employees />} />
           </Routes>
         </main>
