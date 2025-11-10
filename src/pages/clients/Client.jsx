@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Eye, Edit, Trash2, Download, Upload, Search } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
+import ConfirmModal from "../../components/ConfirmModal";
 
 const Client = () => {
   const navigate = useNavigate();
@@ -9,6 +10,8 @@ const Client = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
+  const [modalOpen, setModalOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
 
   // Fetch clients from backend
   const fetchClients = async () => {
@@ -85,23 +88,35 @@ const Client = () => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredMembers.slice(indexOfFirstRow, indexOfLastRow);
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this client?")) {
-      try {
-        const res = await fetch(`http://localhost:8000/api/clients/${id}`, {
-          method: "DELETE",
-        });
+  const handleDeleteClick = (client) => {
+    setClientToDelete(client);
+    setModalOpen(true);
+  };
 
-        if (!res.ok) throw new Error("Delete failed");
+  const handleConfirmDelete = async () => {
+  if (!clientToDelete?.id) return; // safety check
 
-        // Remove from frontend state
-        setTeamMembers(teamMembers.filter((m) => m.id !== id));
-        alert("✅ Client deleted successfully!");
-      } catch (error) {
-        console.error(error);
-        alert("❌ Error deleting client");
-      }
-    }
+  try {
+    const res = await fetch(`http://localhost:8000/api/clients/${clientToDelete.id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Delete failed");
+
+    setTeamMembers(teamMembers.filter((m) => m.id !== clientToDelete.id));
+    setModalOpen(false);
+    setClientToDelete(null);
+    alert("✅ Client deleted successfully!");
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error deleting client");
+  }
+};
+
+
+  const handleCancelDelete = () => {
+    setModalOpen(false);
+    setClientToDelete(null);
   };
 
   const goToPage = (page) => {
@@ -199,7 +214,7 @@ const Client = () => {
                       <button
                         className="text-red-500 hover:text-red-600"
                         title="Delete"
-                        onClick={() => handleDelete(member.id)}
+                        onClick={() => handleDeleteClick(member)}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -250,6 +265,14 @@ const Client = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={modalOpen}
+        title="Confirm Delete"
+        message={`Are you sure you want to delete "${clientToDelete?.client_name}"?`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };
