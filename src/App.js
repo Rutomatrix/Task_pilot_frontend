@@ -3,12 +3,24 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
-import Team from "./pages/Team";
+
+
 import Client from "./pages/clients/Client";
 import ClientAdd from "./pages/clients/ClientAdd";
 import ClientShow from "./pages/clients/ClientShow";
 import ClientEdit from "./pages/clients/ClientEdit";
-import Project from "./pages/Project";
+
+
+import Team from "./pages/teams/Team";
+import TeamAdd from "./pages/teams/TeamAdd";
+import TeamShow from "./pages/teams/TeamShow";
+import TeamEdit from "./pages/teams/TeamEdit";
+
+import Project from "./pages/projects/Project";
+import ProjectAdd from "./pages/projects/ProjectAdd";
+import ProjectShow from "./pages/projects/ProjectShow";
+import ProjectEdit from "./pages/projects/ProjectEdit";
+
 import Task from "./pages/Task";
 import Employees from "./pages/Employees";
 
@@ -25,13 +37,24 @@ const App = () => {
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/chat" element={<Chat />} />
-            <Route path="/teams" element={<Team />} />
 
             {/* Clients routes */}
             <Route path="/clients" element={<Client />} />
             <Route path="/clients/add" element={<ClientAdd />} />
             <Route path="/clients/:id" element={<ClientShow />} />
             <Route path="/clients/:id/edit" element={<ClientEdit />} />
+
+            {/* Teams routes */}
+            <Route path="/teams" element={<Team />} />
+            <Route path="/teams/add" element={<TeamAdd />} />
+            <Route path="/teams/:id" element={<TeamShow />} />
+            <Route path="/teams/:id/edit" element={<TeamEdit />} />
+
+            {/* Projects routes */}
+            <Route path="/projects" element={<Project />} />
+            <Route path="/projects/add" element={<ProjectAdd />} />
+            <Route path="/projects/:id" element={<ProjectShow />} />
+            <Route path="/projects/:id/edit" element={<ProjectEdit />} />
 
             <Route path="/projects" element={<Project />} />
             <Route path="/tasks" element={<Task />} />
