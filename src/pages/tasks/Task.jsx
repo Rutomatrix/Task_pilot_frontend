@@ -4,33 +4,32 @@ import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import ConfirmModal from "../../components/ConfirmModal";
 
-const Project = () => {
+const Tasks = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
   const [modalOpen, setModalOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
-  // Fetch projects from backend
-  const fetchProjects = async () => {
+  // ✅ Fetch tasks from backend
+  const fetchTasks = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/projects/");
+      const res = await fetch("http://localhost:8000/api/tasks/");
       const data = await res.json();
-      // Order by ID ascending
       const sortedData = data.sort((a, b) => a.id - b.id);
-      setProjects(sortedData);
+      setTasks(sortedData);
     } catch (error) {
-      console.error("Error fetching projects:", error);
+      console.error("Error fetching tasks:", error);
     }
   };
 
   useEffect(() => {
-    fetchProjects();
+    fetchTasks();
   }, []);
 
-  // Excel/CSV import
+  // ✅ Excel/CSV import
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -39,7 +38,7 @@ const Project = () => {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/api/import-projects/", {
+      const res = await fetch("http://localhost:8000/api/import-tasks/", {
         method: "POST",
         body: formData,
       });
@@ -47,79 +46,82 @@ const Project = () => {
       if (!res.ok) throw new Error("Upload failed");
 
       alert("✅ File uploaded and processed successfully!");
-      fetchProjects();
+      fetchTasks();
     } catch (error) {
       console.error(error);
       alert("❌ Error uploading file");
     }
   };
 
-  // Excel export
+  // ✅ Excel export
   const handleExport = () => {
-    if (projects.length === 0) {
+    if (tasks.length === 0) {
       alert("No data available to export!");
       return;
     }
 
     const worksheet = XLSX.utils.json_to_sheet(
-      projects.map((p) => ({
-        "Project_ID": p.project_id,
-        "Name": p.name,
-        "Client_ID": Array.isArray(p.client_id) ? p.client_id.join(", ") : p.client_id || "",
-        "Linked_Inventory": Array.isArray(p.linked_inventory) ? p.linked_inventory.join(", ") : p.linked_inventory || "",
-        "Status": p.status || "",
-        "Deadline": p.deadline || "",
-        "Priority": p.priority || "",
-        "Description": p.description || "",
+      tasks.map((t) => ({
+        "Task_ID": t.task_id,
+        "Task_Name": t.task_name,
+        "Project_ID": Array.isArray(t.project_id) ? t.project_id.join(", ") : t.project_id || "",
+        "Type": t.type || "",
+        "Assigned_To": Array.isArray(t.assigned_to) ? t.assigned_to.join(", ") : t.assigned_to || "",
+        "Priority": t.priority || "",
+        "Deadline": t.deadline ? new Date(t.deadline).toLocaleDateString() : "",
+        "Status": t.status || "",
+        "Dependencies": Array.isArray(t.dependencies) ? t.dependencies.join(", ") : t.dependencies || "",
+        "Description": t.description || "",
+        "Skills_Required": Array.isArray(t.skills_required) ? t.skills_required.join(", ") : t.skills_required || "",
       }))
     );
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Projects");
-    XLSX.writeFile(workbook, "projects.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+    XLSX.writeFile(workbook, "tasks.xlsx");
   };
 
-  // Filtering logic (by name)
-  const filteredProjects = search
-    ? projects.filter((p) =>
-        p.name?.toLowerCase().includes(search.toLowerCase())
+  // ✅ Filtering logic (by task name)
+  const filteredTasks = search
+    ? tasks.filter((task) =>
+        task.task_name?.toLowerCase().includes(search.toLowerCase())
       )
-    : projects;
+    : tasks;
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProjects.length / rowsPerPage);
+  // ✅ Pagination
+  const totalPages = Math.ceil(filteredTasks.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = filteredProjects.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = filteredTasks.slice(indexOfFirstRow, indexOfLastRow);
 
-  const handleDeleteClick = (project) => {
-    setProjectToDelete(project);
+  const handleDeleteClick = (task) => {
+    setTaskToDelete(task);
     setModalOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!projectToDelete?.id) return; // safety check
+    if (!taskToDelete?.id) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/projects/${projectToDelete.id}`, {
+      const res = await fetch(`http://localhost:8000/api/tasks/${taskToDelete.id}`, {
         method: "DELETE",
       });
 
       if (!res.ok) throw new Error("Delete failed");
 
-      setProjects(projects.filter((p) => p.id !== projectToDelete.id));
+      setTasks(tasks.filter((t) => t.id !== taskToDelete.id));
       setModalOpen(false);
-      setProjectToDelete(null);
-      alert("✅ Project deleted successfully!");
+      setTaskToDelete(null);
+      alert("✅ Task deleted successfully!");
     } catch (error) {
       console.error(error);
-      alert("❌ Error deleting project");
+      alert("❌ Error deleting task");
     }
   };
 
   const handleCancelDelete = () => {
     setModalOpen(false);
-    setProjectToDelete(null);
+    setTaskToDelete(null);
   };
 
   const goToPage = (page) => {
@@ -132,10 +134,10 @@ const Project = () => {
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Project Management</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Task Management</h1>
         <div className="flex gap-3">
           <button
-            onClick={() => navigate("/projects/add")}
+            onClick={() => navigate("/tasks/add")}
             className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
           >
             + Add
@@ -164,7 +166,7 @@ const Project = () => {
           <Search size={18} className="text-gray-400 mr-2" />
           <input
             type="text"
-            placeholder="Search by project name..."
+            placeholder="Search by task name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full outline-none text-gray-700"
@@ -184,39 +186,33 @@ const Project = () => {
         <table className="min-w-full text-left border-collapse">
           <thead>
             <tr className="border-b bg-[#f2f7fa] text-gray-700">
-              <th className="px-4 py-3 font-semibold">Project ID</th>
-              <th className="px-4 py-3 font-semibold">Project Name</th>
-              <th className="px-4 py-3 font-semibold">Client ID(s)</th>
-              <th className="px-4 py-3 font-semibold">Linked Inventory</th>
+              <th className="px-4 py-3 font-semibold">Task ID</th>
+              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold">Type</th>
+              <th className="px-4 py-3 font-semibold">Priority</th>
               <th className="px-4 py-3 font-semibold">Status</th>
               <th className="px-4 py-3 font-semibold text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {currentRows.length > 0 ? (
-              currentRows.map((p) => (
-                <tr key={p.id} className="border-b hover:bg-[#f9fbfc]">
-                  <td className="px-4 py-3 text-gray-800">{p.project_id}</td>
-                  <td className="px-4 py-3 text-gray-600">{p.name}</td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {Array.isArray(p.client_id) ? p.client_id.join(", ") : p.client_id}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {Array.isArray(p.linked_inventory)
-                      ? p.linked_inventory.join(", ")
-                      : p.linked_inventory}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-green-600">{p.status}</td>
+              currentRows.map((task) => (
+                <tr key={task.id} className="border-b hover:bg-[#f9fbfc]">
+                  <td className="px-4 py-3 text-gray-800">{task.task_id}</td>
+                  <td className="px-4 py-3 text-gray-600">{task.task_name}</td>
+                  <td className="px-4 py-3 text-gray-600">{task.type}</td>
+                  <td className="px-4 py-3 text-gray-600">{task.priority}</td>
+                  <td className="px-4 py-3 font-medium text-green-600">{task.status}</td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex justify-center gap-3">
                       <button
-                        onClick={() => navigate(`/projects/${p.id}`)}
+                        onClick={() => navigate(`/tasks/${task.id}`)}
                         className="text-blue-600 hover:text-blue-800"
                       >
                         <Eye size={18} />
                       </button>
                       <button
-                        onClick={() => navigate(`/projects/${p.id}/edit`)}
+                        onClick={() => navigate(`/tasks/${task.id}/edit`)}
                         className="text-green-600 hover:text-green-700"
                         title="Edit"
                       >
@@ -225,7 +221,7 @@ const Project = () => {
                       <button
                         className="text-red-500 hover:text-red-600"
                         title="Delete"
-                        onClick={() => handleDeleteClick(p)}
+                        onClick={() => handleDeleteClick(task)}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -280,7 +276,7 @@ const Project = () => {
       <ConfirmModal
         isOpen={modalOpen}
         title="Confirm Delete"
-        message={`Are you sure you want to delete "${projectToDelete?.name}"?`}
+        message={`Are you sure you want to delete "${taskToDelete?.task_name}"?`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
@@ -288,4 +284,4 @@ const Project = () => {
   );
 };
 
-export default Project;
+export default Tasks;

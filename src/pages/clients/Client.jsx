@@ -63,10 +63,12 @@ const Client = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(
       teamMembers.map((m) => ({
-        "Client ID": m.client_id,
-        "Client Name": m.client_name,
+        "Client_ID": m.client_id,
+        "Client_Name": m.client_name,
+        "Description": m.description || "",
         "Type": m.type || "",
         "Status": m.status || "",
+        "Active_Projects": m.active_projects || 0,
       }))
     );
 

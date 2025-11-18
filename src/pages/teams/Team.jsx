@@ -63,7 +63,7 @@ const Teams = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(
       teams.map((t) => ({
-        "Team ID": t.team_id,
+        "Team_ID": t.team_id,
         "Category": t.category,
       }))
     );

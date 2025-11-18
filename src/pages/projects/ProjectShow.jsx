@@ -66,7 +66,23 @@ const ProjectShow = () => {
                   : "")
               }`}
             >
-              {project[field] || "N/A"}
+              {project[field] &&
+              project[field] !== "" &&
+              !Number.isNaN(project[field])
+                ? Array.isArray(project[field])
+                  ? project[field].length > 0
+                    ? project[field].join(", ")
+                    : "-"
+                  : field === "deadline" && project[field]
+                  ? (() => {
+                      const d = new Date(project[field]);
+                      const day = String(d.getDate()).padStart(2, "0");
+                      const month = String(d.getMonth() + 1).padStart(2, "0");
+                      const year = d.getFullYear();
+                      return `${day}-${month}-${year}`;
+                    })()
+                  : project[field]
+                : "-"}
             </p>
           </div>
         ))}

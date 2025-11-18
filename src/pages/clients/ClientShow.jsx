@@ -57,7 +57,15 @@ const ClientShow = () => {
                     : "")
                 }`}
               >
-                {client[field] || "N/A"}
+                {client[field] &&
+                client[field] !== "" &&
+                !Number.isNaN(client[field])
+                  ? Array.isArray(client[field])
+                    ? client[field].length > 0
+                      ? client[field].join(", ")
+                      : "-"
+                    : client[field]
+                  : "-"}
               </p>
             </div>
           )

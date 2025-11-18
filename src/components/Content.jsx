@@ -1,43 +1,153 @@
-import React from "react";
-import { PlusCircle, Users, Briefcase, ClipboardList, UserCog } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { PlusCircle, Users, ClipboardList, UserCog } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Content = () => {
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
+  const [projects, setProjects] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [tasks, setTasks] = useState([]);
+
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responses = await Promise.all([
+          fetch("http://localhost:8000/api/projects/"),
+          fetch("http://localhost:8000/api/clients/"),
+          fetch("http://localhost:8000/api/teams/"),
+          fetch("http://localhost:8000/api/employees/"),
+          fetch("http://localhost:8000/api/tasks/"),
+        ]);
+
+        const [proj, cli, tm, emp, tsk] = await Promise.all(
+          responses.map((r) => r.json())
+        );
+
+        setProjects(proj || []);
+        setClients(cli || []);
+        setTeams(tm || []);
+        setEmployees(emp || []);
+        setTasks(tsk || []);
+      } catch {
+        setProjects([]);
+        setClients([]);
+        setTeams([]);
+        setEmployees([]);
+        setTasks([]);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Dashboard Summary Cards
   const cards = [
-    { title: "Total Projects", value: 24, subtitle: "Increased from last month", color: "from-[#28abe2] to-[#f68633]" },
-    { title: "Total Clients", value: 12, subtitle: "New 3 clients this month", color: "from-green-400 to-emerald-600" },
-    { title: "Total Teams", value: 8, subtitle: "Added 2 new teams", color: "from-blue-500 to-cyan-400" },
-    { title: "Total Employees", value: 42, subtitle: "2 joined recently", color: "from-purple-500 to-pink-500" },
+    {
+      title: "Total Projects",
+      value: projects.length,
+      subtitle: "Projects in system",
+      color: "from-[#28abe2] to-[#f68633]",
+    },
+    {
+      title: "Total Clients",
+      value: clients.length,
+      subtitle: "Client organizations",
+      color: "from-green-400 to-emerald-600",
+    },
+    {
+      title: "Total Teams",
+      value: teams.length,
+      subtitle: "Active teams",
+      color: "from-blue-500 to-cyan-400",
+    },
+    {
+      title: "Total Employees",
+      value: employees.length,
+      subtitle: "Employees available",
+      color: "from-purple-500 to-pink-500",
+    },
   ];
 
-  const recentProjects = [
-    { name: "Website Revamp", client: "Acme Corp", status: "Running", deadline: "Nov 20, 2025" },
-    { name: "Mobile App", client: "TechVision", status: "Pending", deadline: "Dec 10, 2025" },
-    { name: "Brand Design", client: "Pixel Ltd", status: "Completed", deadline: "Oct 28, 2025" },
-  ];
+  const recentProjects = [...projects]
+    .sort((a, b) => a.name.localeCompare(b.name))   // ASC order
+    .slice(0, 3)                                    // first 3 after sorting
+    .map((p) => ({
+      project_id: p.project_id,
+      name: p.name,
+      client_ids: Array.isArray(p.client_id) ? p.client_id.join(", ") : p.client_id || "N/A",
+      status: p.status || "N/A",
+    }));
 
-  const recentClients = [
-    { name: "Acme Corp", contact: "John Doe", email: "john@acme.com" },
-    { name: "TechVision", contact: "Jane Smith", email: "jane@techvision.com" },
-  ];
+  const recentClients = [...clients]
+    .sort((a, b) => a.client_name.localeCompare(b.client_name))  // ASC order
+    .slice(0, 3)
+    .map((c) => ({
+      client_id: c.client_id,
+      name: c.client_name,
+      type: c.type || "N/A",
+      status: c.status || "N/A",
+    }));
 
   return (
     <main className="flex-1 p-8 overflow-y-auto bg-[#f2f7fa]">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 relative">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-500">Get an overview of your business performance at a glance.</p>
+          <p className="text-gray-500">
+            Get an overview of your business performance at a glance.
+          </p>
         </div>
-        <div className="flex space-x-4">
-          <button className="bg-[#28abe2] text-white font-medium px-4 py-2 rounded-lg flex items-center space-x-2">
-            <PlusCircle size={18} /> <span>Add Project</span>
+
+        {/* Add Button w/ Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            className="bg-[#28abe2] text-white font-medium px-4 py-2 rounded-lg flex items-center space-x-2"
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            <PlusCircle size={18} />
+            <span>Add</span>
           </button>
-          <button className="border border-gray-300 px-4 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100">
-            Import Data
-          </button>
+
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl border z-50">
+              {[
+                { name: "Add Project", path: "/projects/add" },
+                { name: "Add Client", path: "/clients/add" },
+                { name: "Add Team", path: "/teams/add" },
+                { name: "Add Task", path: "/tasks/add" },
+                { name: "Add Employee", path: "/employees/add" },
+              ].map((item) => (
+                <button
+                  key={item.name}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                  onClick={() => {
+                    setShowDropdown(false);
+                    navigate(item.path);
+                  }}
+                >
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -69,39 +179,29 @@ const Content = () => {
             View All
           </button>
         </div>
+
         <table className="w-full text-sm text-left text-gray-600">
           <thead className="bg-[#f2f7fa] text-gray-700">
             <tr>
-              <th className="py-3 px-4 rounded-tl-lg">Project Name</th>
-              <th className="py-3 px-4">Client</th>
+              <th className="py-3 px-4">Project ID</th>
+              <th className="py-3 px-4">Project Name</th>
+              <th className="py-3 px-4">Client ID(s)</th>
               <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 rounded-tr-lg">Deadline</th>
             </tr>
           </thead>
           <tbody>
             {recentProjects.map((project, index) => (
               <tr key={index} className="hover:bg-gray-50">
+                <td className="py-3 px-4">{project.project_id}</td>
                 <td className="py-3 px-4">{project.name}</td>
-                <td className="py-3 px-4">{project.client}</td>
-                <td className="py-3 px-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      project.status === "Completed"
-                        ? "bg-green-100 text-green-700"
-                        : project.status === "Running"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {project.status}
-                  </span>
-                </td>
-                <td className="py-3 px-4">{project.deadline}</td>
+                <td className="py-3 px-4">{project.client_ids}</td>
+                <td className="py-3 px-4">{project.status}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
 
       {/* Recent Clients */}
       <div className="bg-white rounded-2xl shadow p-6 mb-10">
@@ -111,59 +211,62 @@ const Content = () => {
             Recent Clients
           </h2>
           <button
-            onClick={() => navigate("/client")}
+            onClick={() => navigate("/clients")}
             className="text-[#28abe2] text-sm font-medium hover:underline"
           >
             View All
           </button>
         </div>
+
         <table className="w-full text-sm text-left text-gray-600">
           <thead className="bg-[#f2f7fa] text-gray-700">
             <tr>
-              <th className="py-3 px-4 rounded-tl-lg">Client Name</th>
-              <th className="py-3 px-4">Contact</th>
-              <th className="py-3 px-4 rounded-tr-lg">Email</th>
+              <th className="py-3 px-4">Client ID</th>
+              <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">Type</th>
+              <th className="py-3 px-4">Status</th>
             </tr>
           </thead>
           <tbody>
             {recentClients.map((client, index) => (
-              <tr key={index} className="hover:bg-gray-50">
+                <tr key={index} className="hover:bg-gray-50">
+                <td className="py-3 px-4">{client.client_id}</td>
                 <td className="py-3 px-4">{client.name}</td>
-                <td className="py-3 px-4">{client.contact}</td>
-                <td className="py-3 px-4">{client.email}</td>
+                <td className="py-3 px-4">{client.type}</td>
+                <td className="py-3 px-4">{client.status}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Quick Access Sections */}
+      {/* Quick Access */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div
-          onClick={() => navigate("/team")}
-          className="bg-white rounded-2xl shadow p-6 hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center"
+          onClick={() => navigate("/teams")}
+          className="bg-white rounded-2xl shadow p-6 hover:shadow-lg cursor-pointer flex flex-col items-center text-center"
         >
           <UserCog size={36} className="text-[#28abe2] mb-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Teams Overview</h3>
-          <p className="text-gray-500 text-sm mt-1">Manage and collaborate efficiently.</p>
+          <h3 className="text-lg font-semibold">Teams Overview</h3>
+          <p className="text-gray-500 text-sm">Manage and collaborate efficiently.</p>
         </div>
 
         <div
-          onClick={() => navigate("/task")}
-          className="bg-white rounded-2xl shadow p-6 hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center"
+          onClick={() => navigate("/tasks")}
+          className="bg-white rounded-2xl shadow p-6 hover:shadow-lg cursor-pointer flex flex-col items-center text-center"
         >
           <ClipboardList size={36} className="text-[#f68633] mb-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Tasks Summary</h3>
-          <p className="text-gray-500 text-sm mt-1">Track progress and deadlines.</p>
+          <h3 className="text-lg font-semibold">Tasks Summary</h3>
+          <p className="text-gray-500 text-sm">Track progress and deadlines.</p>
         </div>
 
         <div
           onClick={() => navigate("/employees")}
-          className="bg-white rounded-2xl shadow p-6 hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center"
+          className="bg-white rounded-2xl shadow p-6 hover:shadow-lg cursor-pointer flex flex-col items-center text-center"
         >
           <Users size={36} className="text-[#28abe2] mb-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Employees Overview</h3>
-          <p className="text-gray-500 text-sm mt-1">Monitor team performance.</p>
+          <h3 className="text-lg font-semibold">Employees Overview</h3>
+          <p className="text-gray-500 text-sm">Monitor team performance.</p>
         </div>
       </div>
     </main>

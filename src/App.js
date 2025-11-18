@@ -21,8 +21,15 @@ import ProjectAdd from "./pages/projects/ProjectAdd";
 import ProjectShow from "./pages/projects/ProjectShow";
 import ProjectEdit from "./pages/projects/ProjectEdit";
 
-import Task from "./pages/Task";
-import Employees from "./pages/Employees";
+import Task from "./pages/tasks/Task";
+import TaskAdd from "./pages/tasks/TaskAdd";
+import TaskShow from "./pages/tasks/TaskShow";
+import TaskEdit from "./pages/tasks/TaskEdit";
+
+import Employees from "./pages/employees/Employees";
+import EmployeesAdd from "./pages/employees/EmployeesAdd";
+import EmployeesShow from "./pages/employees/EmployeesShow";
+import EmployeesEdit from "./pages/employees/EmployeesEdit";
 
 const App = () => {
   return (
@@ -56,8 +63,18 @@ const App = () => {
             <Route path="/projects/:id" element={<ProjectShow />} />
             <Route path="/projects/:id/edit" element={<ProjectEdit />} />
 
-            <Route path="/projects" element={<Project />} />
+            {/* Projects routes */}
             <Route path="/tasks" element={<Task />} />
+            <Route path="/tasks/add" element={<TaskAdd />} />
+            <Route path="/tasks/:id" element={<TaskShow />} />
+            <Route path="/tasks/:id/edit" element={<TaskEdit />} />
+
+            {/* Employees routes */}
+            <Route path="/employees" element={<Employees />} />
+            <Route path="/employees/add" element={<EmployeesAdd />} />
+            <Route path="/employees/:id" element={<EmployeesShow />} />
+            <Route path="/employees/:id/edit" element={<EmployeesEdit />} />
+
             <Route path="/employees" element={<Employees />} />
           </Routes>
         </main>
